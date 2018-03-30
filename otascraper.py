@@ -1,5 +1,6 @@
 from selenium import webdriver
 import os
+import sys
 import time
 import csv
 from selenium.webdriver.common.by import By
@@ -18,34 +19,34 @@ allcity = ['Bali']
 citytoscrap = []
 
 #At the begining the program will ask how many city you want to scrap
-choice = raw_input("Ingin Proses 34 Kota Sekaligus ?(Y/N) : ")
+choice = input("Ingin Proses 34 Kota Sekaligus ?(Y/N) : ")
 if choice == 'Y' or choice=='y':
     citytoscrap = allcity
 else:
     print
-    choice2 = raw_input("Masukan Sesuai urutan pada list ?(Y/N) : ")
+    choice2 = input("Masukan Sesuai urutan pada list ?(Y/N) : ")
     if choice2 == 'Y' or choice2=='y':
-        print "Harap tulis nama kota sesuai dengan yang tersedia pada list"
-        dari = raw_input("Dari : ")
-        sampai = raw_input("Sampai : ")
+        print ("Harap tulis nama kota sesuai dengan yang tersedia pada list")
+        dari = input("Dari : ")
+        sampai = input("Sampai : ")
         citytoscrap = allcity[allcity.index(dari):allcity.index(sampai)+1]
     else:
         print
-        n = int(raw_input("Masukan Jumlah Kota : "))
+        n = int(input("Masukan Jumlah Kota : "))
         i=0
         while len(citytoscrap)<n:
-            k = raw_input("Masukan kota/provinsi ke-"+str(i+1)+" :")
+            k = input("Masukan kota/provinsi ke-"+str(i+1)+" :")
             citytoscrap.append(k)
             i+=1
 
 #asking when is the date
 print
 print ("Format tanggal: DD/MM/YYYY, Contoh :  17/08/1945 ")
-dat = raw_input("Masukkan Tanggal Check-In: ")
+dat = input("Masukkan Tanggal Check-In: ")
 
 #And asking what is the output name
 print
-outname = raw_input("Masukan nama output file (.csv) : ")
+outname = input("Masukan nama output file (.csv) : ")
 
 BEXname = []
 BEXlocation = []
@@ -57,14 +58,13 @@ BEXkota = []
 
 
 #The program will ask which currency do you prefer
-print "Pilih Referensi Mata Uang Anda : "
-print "[1] IDR"
-print "[2] USD"
-print "[3] AUD"
-currencies = int(raw_input("Input Number : "))
+print ("Pilih Referensi Mata Uang Anda : ")
+print ("[1] IDR")
+print ("[2] USD")
+print ("[3] AUD")
+currencies = int(input("Input Number : "))
 
 st = datetime.datetime.now().time()
-print st.strftime("%H:%M:%S")
 
 # Because we only want to scrape one day only, so the check-out date is the next date of the check-in date
 # Using the 1 night only stay option doesn't always working, so this procedure is used for get the next date 
@@ -82,7 +82,7 @@ def nextDate(curdat):
             return "0"+str(day+1)+"/"+dat[1]+"/"+str(year)
         else:
             return str(day+1)+"/"+dat[1]+"/"+str(year)
-    except Exception,e:
+    except Exception as e:
         if e.message == "day is out of range for month":
             try:
                 datetime.datetime(year,month+1,1)
@@ -90,7 +90,7 @@ def nextDate(curdat):
                     return "01/0"+str(month+1)+"/"+dat[2]
                 else:
                     return "01/"+str(month+1)+"/"+dat[2]
-            except Exception,e:
+            except Exception as e:
                 if e.message == "month must be in 1..12":
                     return "01/01/"+str(year+1)
 
@@ -225,7 +225,7 @@ def EXratingALT(jum):
             if k == 3:
                 k += 1
             rat = driver.find_element_by_xpath("""//*[@id="resultsContainer"]/section/article["""+str(k)+"""]/div/div/div/div[2]/ul[1]/li[@class="reviewOverall"]/span[2]""").text.encode('utf8')
-            print ""+rat
+            print (""+rat)
             rating.append(rat)
             
         except NoSuchElementException:
@@ -250,7 +250,7 @@ def nextPage():
     except TimeoutException:
         return "HABIS"
     except WebDriverException:
-        print "WebDriver Exc"
+        print ("WebDriver Exc")
         time.sleep(2.5)
         return nextPage()
 
@@ -262,7 +262,7 @@ def EXscrap(kota):
         WebDriverWait(driver, 60).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="bcol"]""")))
     #if exception appear, it will try again    
     except TimeoutException:
-        print "Too long to Load"
+        print ("Too long to Load")
         driver.refresh()
         return EXscrap(kota)
         
@@ -298,7 +298,7 @@ def EXscrap(kota):
         
     #if exception appear, it will try again    
     except StaleElementReferenceException:
-        print "Retry Scraping"
+        print ("Retry Scraping")
         driver.refresh()
         time.sleep(2)
         WebDriverWait(driver, 60).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="bcol"]""")))
@@ -327,7 +327,7 @@ def EXcurrency(currency,city,dat):
         elif currency==3:
             driver.get("https://www.expedia.com.au/Hotel-Search?#&destination="+city+", Indonesia&startDate="+dat+"&endDate="+nextDate(dat))
     except TimeoutException: 
-        print "Kelamaan, Ngulang Dulu"
+        print ("Kelamaan, Ngulang Dulu")
         return EXcurrency(currency,city,dat)
 
 # This function will write all the data to the external file with .csv as its format, 
@@ -357,13 +357,11 @@ for kota in range(0,len(citytoscrap)):
     EXscrapPagin(citytoscrap[kota])
     
     
-    print "Total hotel di "+citytoscrap[kota]+ " : " +str(len(BEXname)) +" ------ ",
+    print ("Total hotel di "+citytoscrap[kota]+ " : " +str(len(BEXname)) +" ------ "),
     nt = datetime.datetime.now().time()
-    print nt.strftime("%H:%M:%S") 
+    print (nt.strftime("%H:%M:%S")) 
     driver.quit()   
     EXnulis(len(BEXname),pathsave,outname)
       
 
 et = datetime.datetime.now().time()
-print (et.strftime("%H:%M:%S"))
-
